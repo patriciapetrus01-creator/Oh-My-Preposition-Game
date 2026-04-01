@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oh My Preposition! Memory Game</title>
+    <style>
+        :root {
+            --primary: #FF6B6B; 
+            --secondary: #FFD93D; 
+            --accent: #4D96FF; 
+            --success: #6BCB77; 
+            --danger: #e74c3c;
+            --light: #fdfdfd;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            text-align: center;
+            border: 10px solid var(--secondary);
+        }
+
+        h1 { color: var(--primary); font-size: 2.8rem; margin: 0 0 15px 0; }
+        p { font-size: 1.3rem; color: var(--dark); }
+
+        .scene-image {
+            width: 100%;
+            height: 500px;
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 6px solid var(--accent);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-bar-container {
+            width: 100%;
+            background: #eee;
+            height: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 2px solid #ddd;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: var(--secondary);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        button:hover { transform: translateY(-3px) scale(1.02); background: #357abd; }
+        button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .start-btn { background: var(--primary); font-size: 1.8rem; padding: 25px 60px; }
+        .next-btn { background: var(--success); margin-top: 25px; }
+
+        .feedback { font-size: 1.8rem; font-weight: bold; margin-top: 20px; min-height: 1.6em; }
+        .hidden { display: none; }
+        .score-info { font-size: 1.4rem; font-weight: bold; color: var(--accent); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1>🎮 Oh My Preposition!</h1>
+        <p>Prepositions of Place Challenge</p>
+        <p>Look at the picture for 10 seconds, then answer the question!</p>
+        <button class="start-btn" onclick="startGame()">START GAME</button>
+    </div>
+
+    <div id="game-screen" class="hidden">
+        <div class="score-info">Scene: <span id="current-scene-num">1</span> / 5</div>
+        <div class="timer-bar-container"><div id="timer" class="timer-bar"></div></div>
+        
+        <div id="image-area">
+            <div id="scene-display" class="scene-image"></div>
+        </div>
+
+        <div id="question-area" class="hidden">
+            <h2 id="question-text" style="color: var(--dark); font-size: 2rem;"></h2>
+            <div id="options" class="options-container"></div>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="hidden next-btn" onclick="loadScene()">Next Scene ➜</button>
+    </div>
+
+    <div id="end-screen" class="hidden">
+        <h1>🏆 Well Done!</h1>
+        <p id="final-score" style="font-size: 2rem; color: var(--dark);"></p>
+        <button class="start-btn" onclick="location.reload()">Play Again</button>
+    </div>
+</div>
+
+<script>
+    // These paths look for files in the SAME FOLDER as this HTML file
+    const scenes = [
+        {
+            image: "file:///C:/Users/ASUS/Downloads/FINALIZE%20MATERIALS%20FOR%20GROUP%20INNOVATION%20PROJECT/SCENE%201.png", 
+            question: "Where is the rabbit?",
+            options: [
+                { text: "The rabbit is under the slide.", correct: false },
+                { text: "The rabbit is next to the big tree.", correct: true },
+                { text: "The rabbit is in the dog's mouth.", correct: false }
+            ]
+        },
+        {
+            image: "file:///C:/Users/ASUS/Downloads/FINALIZE%20MATERIALS%20FOR%20GROUP%20INNOVATION%20PROJECT/SCENE%202.png",
+            question: "Where is the cat?",
+            options: [
+                { text: "The cat is on the sofa.", correct: true },
+                { text: "The cat is under the sofa.", correct: false },
+                { text: "The cat is next to the teddy bear.", correct: false }
+            ]
+        },
+        {
+            image: "file:///C:/Users/ASUS/Downloads/FINALIZE%20MATERIALS%20FOR%20GROUP%20INNOVATION%20PROJECT/SCENE%203.png",
+            question: "Where is the rat?",
+            options: [
+                { text: "The rat is on the table.", correct: false },
+                { text: "The rat is under the cabinet.", correct: true },
+                { text: "The red handbag is in the cabinet.", correct: false }
+            ]
+        },
+        {
+            image: "file:///C:/Users/ASUS/Downloads/FINALIZE%20MATERIALS%20FOR%20GROUP%20INNOVATION%20PROJECT/SCENE%204.png",
+            question: "Where is the red can?",
+            options: [
+                { text: "The red can is next to the dustbin.", correct: true },
+                { text: "The red can is in the school bag.", correct: false },
+                { text: "The red can is on the teacher's desk.", correct: false }
+            ]
+        },
+        {
+            image: "file:///C:/Users/ASUS/Downloads/FINALIZE%20MATERIALS%20FOR%20GROUP%20INNOVATION%20PROJECT/SCENE%205.png",
+            question: "Where is the crab?",
+            options: [
+                { text: "The crab is under the bench.", correct: false },
+                { text: "The crab is next to the sandcastle.", correct: true },
+                { text: "The crab is on the stone.", correct: false }
+            ]
+        }
+    ];
+
+    let currentScene = 0;
+    let score = 0;
+    let timerInterval;
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        loadScene();
+    }
+
+    function loadScene() {
+        if (currentScene >= scenes.length) {
+            showEndScreen();
+            return;
+        }
+
+        const scene = scenes[currentScene];
+        document.getElementById('current-scene-num').innerText = currentScene + 1;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('next-btn').classList.add('hidden');
+        document.getElementById('question-area').classList.add('hidden');
+        document.getElementById('image-area').classList.remove('hidden');
+        document.getElementById('timer').style.width = "100%";
+        
+        const display = document.getElementById('scene-display');
+        display.style.backgroundImage = `url('${scene.image}')`;
+        display.innerText = ""; 
+
+        let timeLeft = 10;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').style.width = (timeLeft * 10) + "%";
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                showQuestion();
+            }
+        }, 1000);
+    }
+
+    function showQuestion() {
+        document.getElementById('image-area').classList.add('hidden');
+        document.getElementById('question-area').classList.remove('hidden');
+        
+        const scene = scenes[currentScene];
+        document.getElementById('question-text').innerText = scene.question;
+        
+        const optionsDiv = document.getElementById('options');
+        optionsDiv.innerHTML = "";
+        
+        scene.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt.text;
+            btn.onclick = () => checkAnswer(opt.correct);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(isCorrect) {
+        const feedback = document.getElementById('feedback');
+        document.querySelectorAll('#options button').forEach(btn => btn.disabled = true);
+
+        if (isCorrect) {
+            feedback.innerText = "🌟 Correct! Excellent!";
+            feedback.style.color = "var(--success)";
+            score++;
+        } else {
+            feedback.innerText = "❌ Oops! Try again next time!";
+            feedback.style.color = "var(--danger)";
+        }
+
+        currentScene++;
+        document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function showEndScreen() {
+        document.getElementById('game-screen').classList.add('hidden');
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('final-score').innerText = `Your Score: ${score} / 5`;
+    }
+</script>
+
+</body>
+</html>
